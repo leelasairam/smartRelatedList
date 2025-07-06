@@ -1,16 +1,16 @@
 <template>
     <lightning-card >
-        <p slot="title"><lightning-icon icon-name="standard:related_list"></lightning-icon> &nbsp; {relatedListName} &nbsp; ({totalRecordsCount})</p>
+        <p slot="title"><lightning-icon icon-name="standard:related_list"></lightning-icon> {relatedListName} ({totalRecordsCount})</p>
             <!--actions-->
             <div slot="actions">
                 <lightning-button-group>
                     <template for:each={buttonsList} for:item="i">
-                        <lightning-button label={i} name={i} key={i}></lightning-button>
+                        <lightning-button label={i} data-btn={i} key={i} onclick={handleButtonActions}></lightning-button>
                     </template>
                 </lightning-button-group>
             </div>
             <!--data table-->
-            <div class="slds-p-horizontal_small">
+            <div class="slds-p-horizontal_small" lwc:ref="dataTableDiv">
                 <lightning-datatable key-field="id" data={sObjectData} columns={cols}></lightning-datatable>
             </div>
         </lightning-card>
