@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>true</isExposed>
+   <targets>
+       <target>lightning__RecordPage</target>
+   </targets>
+
+   <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <property name="relatedListName" label="Related List Name" type="String" description="Enter Name of the Related list to display in card."/>
+            <property name="objectName" label="Object Name" type="String" description="Enter Object API Name."/>
+            <property name="parentLookupField" label="Parent Lookup Field" type="String" description="Enter Lookup Field API Name."/>
+            <property name="fieldsToDisplay" label="Fields to Display" type="String"  description="Use ',' to add multiple fields. Add API Names only and 'Id' field required. Avoid using unwanted spaces."/>
+            <property name="filters" label="Filters" type="String" description="Write SOQL WHERE condition by excluding 'WHERE'."/>
+            <property name="buttons" label="Buttons" type="String" description="Use ',' to add multiple buttons. Avoid using unwanted spaces."/>
+        </targetConfig>
+    </targetConfigs>
+
+</LightningComponentBundle>
