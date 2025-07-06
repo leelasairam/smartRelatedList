@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import getFieldLabel from '@salesforce/apex/smartRelatedListController.getFieldLabel';
 import getData from '@salesforce/apex/smartRelatedListController.getData';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class SmartRelatedListCmp extends LightningElement {
     @api recordId;
@@ -17,6 +18,11 @@ export default class SmartRelatedListCmp extends LightningElement {
     @track cols = [];
     @track sObjectData = [];
     totalRecordsCount;
+
+    showFlow = false;
+    flowProps = [];
+    flowApiName;
+    modalTittle = '';
     
 
     connectedCallback(){
@@ -25,6 +31,16 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.fieldsToDisplayList = this.fieldsToDisplay?.split(',');
         this.getFieldLabelForAPINames();
         this.fetchData();
+    }
+
+    toast(title,msg,varient) {
+        const event = new ShowToastEvent({
+            title: title,
+            message: msg,
+            variant: varient,
+            mode: 'dismissable'
+        });
+        this.dispatchEvent(event);
     }
 
     async getFieldLabelForAPINames(){
@@ -69,10 +85,14 @@ export default class SmartRelatedListCmp extends LightningElement {
         })
     }
 
+    closeFlow(){
+        this.showFlow = false;
+    }
+
     handleButtonActions(event){
         const btn = event.target.dataset.btn;
         const container = this.refs.dataTableDiv;
-        const selectedRecords =  container.querySelector("lightning-datatable").getSelectedRows();
+        const selectedRecords =  container.querySelector("lightning-datatable").getSelectedRows() || [];
         const selectedRecordIds = selectedRecords?.map(record=>(record.Id));
         const selectedRecordSize = selectedRecordIds.length;
         console.log('selectedRecords',selectedRecords,selectedRecordIds);
@@ -80,17 +100,74 @@ export default class SmartRelatedListCmp extends LightningElement {
         
         //Contact Edit
         if(btn==='Edit' && this.objectName === 'Contact'){
-            console.log('Clicked on Contact edit');
+            console.log('Contact Edit');
+            if(selectedRecordSize>1 || selectedRecordSize == 0){
+                const msg = selectedRecordSize == 0 ? 'Select the contact to edit' : 'Select only one contact to edit';
+                this.toast('Error',msg,'error');
+                return;
+            }
+            this.modalTittle = 'Edit Contact';
+            this.flowApiName = 'LWC_Contact_Edit_Form';
+            this.flowProps = [
+                {
+                    name: "accountId",
+                    type: "String",
+                    value: this.recordId,
+                },
+                {
+                    name: "contactId",
+                    type: "String",
+                    value: selectedRecordIds[0],
+                },
+                {
+                    name: "action",
+                    type: "String",
+                    value: btn,
+                },
+            ];
+            this.showFlow = true;
+        }
+        //Contact New
+        if(btn==='New' && this.objectName === 'Contact'){
+            console.log('Contact New');
+            this.modalTittle = 'New Contact';
+            this.flowApiName = 'LWC_Contact_Edit_Form';
+            this.flowProps = [
+                {
+                    name: "accountId",
+                    type: "String",
+                    value: this.recordId,
+                },
+                {
+                    name: "contactId",
+                    type: "String",
+                    value: '',
+                },
+                {
+                    name: "action",
+                    type: "String",
+                    value: btn,
+                },
+            ];
+            this.showFlow = true;
         }
         //Case Edit
         else if(btn==='Edit' && this.objectName === 'Case'){
             console.log('Clicked on Case edit');
         }
-        //Contact New
+        //Case New
         else if(btn==='New' && this.objectName === 'Case'){
             console.log('Clicked on Case New');
         }
         
     }
+
+    handleFlowStatusChange(event) {
+		console.log("flow status", event.detail.status);
+		if (event.detail.status === "FINISHED") {
+			console.log('Flow Completed');
+            this.showFlow = false;
+		}
+	}
 
 }

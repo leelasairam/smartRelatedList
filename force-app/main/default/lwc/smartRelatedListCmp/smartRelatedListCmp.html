@@ -14,4 +14,16 @@
                 <lightning-datatable key-field="id" data={sObjectData} columns={cols}></lightning-datatable>
             </div>
         </lightning-card>
+
+        <template if:true={showFlow}>
+            <c-modal>
+                <div slot="header">{modalTittle}</div>
+                <div slot="body">
+                    <lightning-flow flow-api-name={flowApiName} flow-input-variables={flowProps} onstatuschange={handleFlowStatusChange}></lightning-flow>
+                </div>
+                <div slot="footer">
+                    <lightning-button icon-name="utility:close" label="Close" onclick={closeFlow} variant="destructive"></lightning-button>
+                </div>
+            </c-modal>
+        </template>
 </template>
