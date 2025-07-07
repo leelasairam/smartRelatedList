@@ -15,6 +15,7 @@
             <property name="filters" label="Filters" type="String" description="Write SOQL WHERE condition by excluding 'WHERE'."/>
             <property name="buttons" label="Buttons" type="String" description="Use ',' to add multiple buttons. Avoid using unwanted spaces."/>
             <property name="clcikableField" label="Clickable Field" type="String" description="Enter a field api name which you want to make clickable to redirect to the record."/>
+            <property name="recordsPerPage" label="Records Per Page" type="Integer" />
         </targetConfig>
     </targetConfigs>
 

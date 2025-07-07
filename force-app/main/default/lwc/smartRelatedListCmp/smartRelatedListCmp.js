@@ -12,12 +12,19 @@ export default class SmartRelatedListCmp extends LightningElement {
     @api parentLookupField;
     @api relatedListName;
     @api clcikableField;
+    @api recordsPerPage;
 
     buttonsList;
     fieldsToDisplayList;
     @track cols = [];
     @track sObjectData = [];
-    totalRecordsCount;
+    totalRecordsCount='';
+    offset = 0;
+    query='';
+    disableNextButton = false;
+    disablePrevButton = false;
+    page = 1;
+    isLoading = false;
 
     showFlow = false;
     flowProps = [];
@@ -30,6 +37,7 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.buttonsList = this.buttons?.split(',');
         this.fieldsToDisplayList = this.fieldsToDisplay?.split(',');
         this.getFieldLabelForAPINames();
+        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY CreatedDate DESC LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
         this.fetchData();
     }
 
@@ -44,6 +52,7 @@ export default class SmartRelatedListCmp extends LightningElement {
     }
 
     async getFieldLabelForAPINames(){
+        this.isLoading = true;
         let columns = [];
         await getFieldLabel({objectApiName:this.objectName,fieldAPINames:this.fieldsToDisplayList})
         .then(result=>{
@@ -68,21 +77,48 @@ export default class SmartRelatedListCmp extends LightningElement {
         .catch(error=>{
             console.log(error);
         })
+        .finally(()=>{
+            this.isLoading = false;
+        })
         
     }
 
     async fetchData(){
-        const query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters}`;
-        console.log('query',query,this.cols);
-        await getData({q:query})
+        console.log('query',this.query,this.cols);
+        this.isLoading = true;
+        await getData({q:this.query})
         .then(result=>{
             console.log('data',result);
             this.sObjectData = result.map(res=>({...res,recordLink:'/'+res.Id}));
-            this.totalRecordsCount = result.length;
+            const recSize = result.length;
+            if(this.page==1){
+                this.totalRecordsCount = recSize >= this.recordsPerPage ? `${this.recordsPerPage}+` : `${recSize}`;
+            }
+            this.disableNextButton = (recSize < this.recordsPerPage);
+            this.disablePrevButton = (this.page === 1);
         })
         .catch(error=>{
             console.log(error);
         })
+        .finally(()=>{
+            this.isLoading = false;
+        })
+    }
+
+    handlePagination(event){
+        const btn = event.target.dataset.btn;
+        if(btn=='next'){
+            this.offset += this.recordsPerPage;
+            this.page += 1;
+        }
+        else if(btn=='prev'){
+            this.offset -= this.recordsPerPage;
+            this.page -= 1;
+        }
+        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY CreatedDate DESC LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
+        this.fetchData();
+        const container = this.refs.dataTableDiv;
+        container.querySelector("lightning-datatable").selectedRows = [];
     }
 
     closeFlow(){
@@ -118,7 +154,6 @@ export default class SmartRelatedListCmp extends LightningElement {
             console.log('Clicked on Case New');
             this.handleNewCase(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
-        
     }
 
     handleFlowStatusChange(event) {

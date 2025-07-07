@@ -9,9 +9,27 @@
                     </template>
                 </lightning-button-group>
             </div>
+
+            <!--Loading-->
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+            </template>
             <!--data table-->
             <div class="slds-p-horizontal_small" lwc:ref="dataTableDiv">
                 <lightning-datatable key-field="id" data={sObjectData} columns={cols}></lightning-datatable>
+                <template if:true={disableNextButton}>
+                    <div class="no-data">
+                        <lightning-badge label="You reached the last page, please navigate to previous page." icon-name="utility:error"></lightning-badge>
+                    </div>
+                </template>
+            </div>
+            <!--Footer-->
+            <div class="footer-btn" slot="footer">
+                <lightning-button-group>
+                    <lightning-button label="Previous" variant="brand" data-btn="prev" onclick={handlePagination} disabled={disablePrevButton} icon-name="utility:left"></lightning-button>
+                    <lightning-button label={page} icon-name="utility:page"></lightning-button>
+                    <lightning-button label="Next" variant="brand" data-btn="next" onclick={handlePagination} disabled={disableNextButton} icon-name="utility:right"></lightning-button>
+                </lightning-button-group>
             </div>
         </lightning-card>
 
@@ -26,4 +44,5 @@
                 </div>
             </c-modal>
         </template>
+
 </template>
