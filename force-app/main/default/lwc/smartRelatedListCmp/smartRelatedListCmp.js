@@ -101,63 +101,22 @@ export default class SmartRelatedListCmp extends LightningElement {
         //Contact Edit
         if(btn==='Edit' && this.objectName === 'Contact'){
             console.log('Contact Edit');
-            if(selectedRecordSize>1 || selectedRecordSize == 0){
-                const msg = selectedRecordSize == 0 ? 'Select the contact to edit' : 'Select only one contact to edit';
-                this.toast('Error',msg,'error');
-                return;
-            }
-            this.modalTittle = 'Edit Contact';
-            this.flowApiName = 'LWC_Contact_Edit_Form';
-            this.flowProps = [
-                {
-                    name: "accountId",
-                    type: "String",
-                    value: this.recordId,
-                },
-                {
-                    name: "contactId",
-                    type: "String",
-                    value: selectedRecordIds[0],
-                },
-                {
-                    name: "action",
-                    type: "String",
-                    value: btn,
-                },
-            ];
-            this.showFlow = true;
+            this.handleEditContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
         //Contact New
         if(btn==='New' && this.objectName === 'Contact'){
             console.log('Contact New');
-            this.modalTittle = 'New Contact';
-            this.flowApiName = 'LWC_Contact_Edit_Form';
-            this.flowProps = [
-                {
-                    name: "accountId",
-                    type: "String",
-                    value: this.recordId,
-                },
-                {
-                    name: "contactId",
-                    type: "String",
-                    value: '',
-                },
-                {
-                    name: "action",
-                    type: "String",
-                    value: btn,
-                },
-            ];
-            this.showFlow = true;
+            this.handleNewContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
         //Case Edit
         else if(btn==='Edit' && this.objectName === 'Case'){
             console.log('Clicked on Case edit');
+            this.handleEditCase(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
         //Case New
         else if(btn==='New' && this.objectName === 'Case'){
             console.log('Clicked on Case New');
+            this.handleNewCase(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
         
     }
@@ -167,7 +126,110 @@ export default class SmartRelatedListCmp extends LightningElement {
 		if (event.detail.status === "FINISHED") {
 			console.log('Flow Completed');
             this.showFlow = false;
+            this.toast('Success','Saved successfully','success');
 		}
 	}
+
+    handleEditCase(sRecords,sRecordIds,sRecordsCount,btnName){
+        if(sRecordsCount>1 || sRecordsCount == 0){
+            const msg = sRecordsCount == 0 ? 'Select the contact to edit' : 'Select only one contact to edit';
+            this.toast('Error',msg,'error');
+            return;
+        }
+        this.modalTittle = 'Edit Case';
+        this.flowApiName = 'LWC_Case_Edit_Form';
+        this.flowProps = [
+            {
+                name: "accountId",
+                type: "String",
+                value: this.recordId,
+            },
+            {
+                name: "caseId",
+                type: "String",
+                value: sRecordIds[0],
+            },
+            {
+                name: "action",
+                type: "String",
+                value: btnName,
+            },
+        ];
+        this.showFlow = true;
+    }
+
+    handleNewCase(sRecords,sRecordIds,sRecordsCount,btnName){
+        this.modalTittle = 'New Case';
+        this.flowApiName = 'LWC_Case_Edit_Form';
+        this.flowProps = [
+            {
+                name: "accountId",
+                type: "String",
+                value: this.recordId,
+            },
+            {
+                name: "caseId",
+                type: "String",
+                value: '',
+            },
+            {
+                name: "action",
+                type: "String",
+                value: btnName,
+            },
+        ];
+        this.showFlow = true;
+    }
+
+    handleNewContact(sRecords,sRecordIds,sRecordsCount,btnName){
+        this.modalTittle = 'New Contact';
+        this.flowApiName = 'LWC_Contact_Edit_Form';
+        this.flowProps = [
+            {
+                name: "accountId",
+                type: "String",
+                value: this.recordId,
+            },
+            {
+                name: "contactId",
+                type: "String",
+                value: '',
+            },
+            {
+                name: "action",
+                type: "String",
+                value: btnName,
+            },
+        ];
+        this.showFlow = true;
+    }
+
+    handleEditContact(sRecords,sRecordIds,sRecordsCount,btnName){
+        if(sRecordsCount>1 || sRecordsCount == 0){
+            const msg = sRecordsCount == 0 ? 'Select the contact to edit' : 'Select only one contact to edit';
+            this.toast('Error',msg,'error');
+            return;
+        }
+        this.modalTittle = 'Edit Contact';
+        this.flowApiName = 'LWC_Contact_Edit_Form';
+        this.flowProps = [
+            {
+                name: "accountId",
+                type: "String",
+                value: this.recordId,
+            },
+            {
+                name: "contactId",
+                type: "String",
+                value: sRecordIds[0],
+            },
+            {
+                name: "action",
+                type: "String",
+                value: btnName,
+            },
+        ];
+        this.showFlow = true;
+    }
 
 }
