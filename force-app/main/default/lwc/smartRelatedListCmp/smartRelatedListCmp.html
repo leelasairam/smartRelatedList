@@ -4,9 +4,19 @@
             <!--actions-->
             <div slot="actions">
                 <lightning-button-group>
-                    <template for:each={buttonsList} for:item="i">
-                        <lightning-button label={i} data-btn={i} key={i} onclick={handleButtonActions}></lightning-button>
+                    <template for:each={buttonsList} for:item="i" >
+                        <template if:false={i.isMenuItem}>
+                            <lightning-button label={i.name} data-btn={i.name} key={i.name} onclick={handleButtonActions}></lightning-button>
+                        </template>
                     </template>
+                    <!--Menu Items-->
+                    <lightning-button-menu alternative-text="Show menu" variant="border-filled">
+                        <template for:each={buttonsList} for:item="j">
+                            <template if:true={j.isMenuItem}>
+                                <lightning-menu-item label={j.name} data-btn={j.name} key={j.name} onclick={handleButtonActions}></lightning-menu-item>
+                            </template>
+                        </template>
+                    </lightning-button-menu>
                 </lightning-button-group>
             </div>
 
@@ -19,7 +29,7 @@
                 <lightning-datatable key-field="id" data={sObjectData} columns={cols}></lightning-datatable>
                 <template if:true={disableNextButton}>
                     <div class="no-data">
-                        <lightning-badge label="You reached the last page, please navigate to previous page." icon-name="utility:error"></lightning-badge>
+                        <lightning-badge label="Nothing to display" icon-name="utility:info_alt"></lightning-badge>
                     </div>
                 </template>
             </div>

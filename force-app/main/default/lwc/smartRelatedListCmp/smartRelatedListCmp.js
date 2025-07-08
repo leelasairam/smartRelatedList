@@ -34,7 +34,7 @@ export default class SmartRelatedListCmp extends LightningElement {
 
     connectedCallback(){
         console.log('recordId',this.recordId);
-        this.buttonsList = this.buttons?.split(',');
+        this.buttonsList = this.buttons?.split(',').map((btn,index)=>({name:btn,isMenuItem:index<=1 ? false : true}));
         this.fieldsToDisplayList = this.fieldsToDisplay?.split(',');
         this.getFieldLabelForAPINames();
         this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY CreatedDate DESC LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
@@ -92,7 +92,7 @@ export default class SmartRelatedListCmp extends LightningElement {
             this.sObjectData = result.map(res=>({...res,recordLink:'/'+res.Id}));
             const recSize = result.length;
             if(this.page==1){
-                this.totalRecordsCount = recSize >= this.recordsPerPage ? `${this.recordsPerPage}+` : `${recSize}`;
+                this.totalRecordsCount = recSize >= this.recordsPerPage ? `≥${this.recordsPerPage}` : `${recSize}`;
             }
             this.disableNextButton = (recSize < this.recordsPerPage);
             this.disablePrevButton = (this.page === 1);
@@ -121,9 +121,7 @@ export default class SmartRelatedListCmp extends LightningElement {
         container.querySelector("lightning-datatable").selectedRows = [];
     }
 
-    closeFlow(){
-        this.showFlow = false;
-    }
+    //### Buttons Logic stats here
 
     handleButtonActions(event){
         const btn = event.target.dataset.btn;
@@ -156,6 +154,10 @@ export default class SmartRelatedListCmp extends LightningElement {
         }
     }
 
+    closeFlow(){
+        this.showFlow = false;
+    }
+
     handleFlowStatusChange(event) {
 		console.log("flow status", event.detail.status);
 		if (event.detail.status === "FINISHED") {
@@ -168,7 +170,7 @@ export default class SmartRelatedListCmp extends LightningElement {
     handleEditCase(sRecords,sRecordIds,sRecordsCount,btnName){
         if(sRecordsCount>1 || sRecordsCount == 0){
             const msg = sRecordsCount == 0 ? 'Select the contact to edit' : 'Select only one contact to edit';
-            this.toast('Error',msg,'error');
+            this.toast(msg,'','error');
             return;
         }
         this.modalTittle = 'Edit Case';
@@ -242,7 +244,7 @@ export default class SmartRelatedListCmp extends LightningElement {
     handleEditContact(sRecords,sRecordIds,sRecordsCount,btnName){
         if(sRecordsCount>1 || sRecordsCount == 0){
             const msg = sRecordsCount == 0 ? 'Select the contact to edit' : 'Select only one contact to edit';
-            this.toast('Error',msg,'error');
+            this.toast(msg,'','error');
             return;
         }
         this.modalTittle = 'Edit Contact';
