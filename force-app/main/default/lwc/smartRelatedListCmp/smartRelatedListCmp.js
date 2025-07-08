@@ -26,7 +26,7 @@ export default class SmartRelatedListCmp extends LightningElement {
     page = 1;
     isLoading = false;
 
-    showFlow = false;
+    showModal = false;
     flowProps = [];
     flowApiName;
     modalTittle = '';
@@ -121,7 +121,7 @@ export default class SmartRelatedListCmp extends LightningElement {
         container.querySelector("lightning-datatable").selectedRows = [];
     }
 
-    //### Buttons Logic stats here
+    // ### Buttons Logic starts here ###
 
     handleButtonActions(event){
         const btn = event.target.dataset.btn;
@@ -155,14 +155,14 @@ export default class SmartRelatedListCmp extends LightningElement {
     }
 
     closeFlow(){
-        this.showFlow = false;
+        this.showModal = false;
     }
 
     handleFlowStatusChange(event) {
 		console.log("flow status", event.detail.status);
 		if (event.detail.status === "FINISHED") {
 			console.log('Flow Completed');
-            this.showFlow = false;
+            this.showModal = false;
             this.toast('Success','Saved successfully','success');
 		}
 	}
@@ -192,7 +192,7 @@ export default class SmartRelatedListCmp extends LightningElement {
                 value: btnName,
             },
         ];
-        this.showFlow = true;
+        this.showModal = true;
     }
 
     handleNewCase(sRecords,sRecordIds,sRecordsCount,btnName){
@@ -215,7 +215,7 @@ export default class SmartRelatedListCmp extends LightningElement {
                 value: btnName,
             },
         ];
-        this.showFlow = true;
+        this.showModal = true;
     }
 
     handleNewContact(sRecords,sRecordIds,sRecordsCount,btnName){
@@ -238,7 +238,7 @@ export default class SmartRelatedListCmp extends LightningElement {
                 value: btnName,
             },
         ];
-        this.showFlow = true;
+        this.showModal = true;
     }
 
     handleEditContact(sRecords,sRecordIds,sRecordsCount,btnName){
@@ -266,7 +266,7 @@ export default class SmartRelatedListCmp extends LightningElement {
                 value: btnName,
             },
         ];
-        this.showFlow = true;
+        this.showModal = true;
     }
 
 }
