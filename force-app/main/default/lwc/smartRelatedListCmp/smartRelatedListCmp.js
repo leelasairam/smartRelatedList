@@ -1,6 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import getFieldLabel from '@salesforce/apex/smartRelatedListController.getFieldLabel';
 import getData from '@salesforce/apex/smartRelatedListController.getData';
+import getObjName from '@salesforce/apex/smartRelatedListController.getObjName';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 
 export default class SmartRelatedListCmp extends LightningElement {
@@ -14,6 +15,7 @@ export default class SmartRelatedListCmp extends LightningElement {
     @api clcikableField;
     @api recordsPerPage;
 
+    recordPageObject='';
     buttonsList;
     fieldsToDisplayList;
     @track cols = [];
@@ -37,6 +39,7 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.buttonsList = this.buttons?.split(',').map((btn,index)=>({name:btn,isMenuItem:index<=1 ? false : true}));
         this.fieldsToDisplayList = this.fieldsToDisplay?.split(',');
         this.getFieldLabelForAPINames();
+        this.getRecordPageObject();
         this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY CreatedDate DESC LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
         this.fetchData();
     }
@@ -49,6 +52,20 @@ export default class SmartRelatedListCmp extends LightningElement {
             mode: 'dismissable'
         });
         this.dispatchEvent(event);
+    }
+
+    async getRecordPageObject(){
+        this.isLoading = true;
+        await getObjName({recordId:this.recordId})
+        .then(result=>{
+            this.recordPageObject = result;
+        })
+        .catch(error=>{
+            console.log(error);
+        })
+        .finally(()=>{
+            this.isLoading = false;
+        })
     }
 
     async getFieldLabelForAPINames(){
@@ -92,7 +109,7 @@ export default class SmartRelatedListCmp extends LightningElement {
             this.sObjectData = result.map(res=>({...res,recordLink:'/'+res.Id}));
             const recSize = result.length;
             if(this.page==1){
-                this.totalRecordsCount = recSize >= this.recordsPerPage ? `≥${this.recordsPerPage}` : `${recSize}`;
+                this.totalRecordsCount = recSize >= this.recordsPerPage ? `${this.recordsPerPage}+` : `${recSize}`;
             }
             this.disableNextButton = (recSize < this.recordsPerPage);
             this.disablePrevButton = (this.page === 1);
@@ -121,9 +138,10 @@ export default class SmartRelatedListCmp extends LightningElement {
         container.querySelector("lightning-datatable").selectedRows = [];
     }
 
+
     // ### Buttons Logic starts here ###
 
-    handleButtonActions(event){
+   handleButtonActions(event){
         const btn = event.target.dataset.btn;
         const container = this.refs.dataTableDiv;
         const selectedRecords =  container.querySelector("lightning-datatable").getSelectedRows() || [];
@@ -133,22 +151,30 @@ export default class SmartRelatedListCmp extends LightningElement {
         console.log('button',btn);
         
         //Contact Edit
-        if(btn==='Edit' && this.objectName === 'Contact'){
+        if(btn==='Edit' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
             console.log('Contact Edit');
             this.handleEditContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
         //Contact New
-        if(btn==='New' && this.objectName === 'Contact'){
+        if(btn==='New' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
             console.log('Contact New');
             this.handleNewContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
+        if(btn==='New' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
+            console.log('Contact New');
+            this.handleNewContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
+        }
+        if(btn==='Delete' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
+            console.log('Contact Delete');
+            this.handleDeleteContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
+        }
         //Case Edit
-        else if(btn==='Edit' && this.objectName === 'Case'){
+        else if(btn==='Edit' && this.objectName === 'Case' && this.recordPageObject === 'Account'){
             console.log('Clicked on Case edit');
             this.handleEditCase(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
         //Case New
-        else if(btn==='New' && this.objectName === 'Case'){
+        else if(btn==='New' && this.objectName === 'Case' && this.recordPageObject === 'Account'){
             console.log('Clicked on Case New');
             this.handleNewCase(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
@@ -249,23 +275,14 @@ export default class SmartRelatedListCmp extends LightningElement {
         }
         this.modalTittle = 'Edit Contact';
         this.flowApiName = 'LWC_Contact_Edit_Form';
-        this.flowProps = [
-            {
-                name: "accountId",
-                type: "String",
-                value: this.recordId,
-            },
-            {
-                name: "contactId",
-                type: "String",
-                value: sRecordIds[0],
-            },
-            {
-                name: "action",
-                type: "String",
-                value: btnName,
-            },
-        ];
+        this.flowProps = [{name: "accountId",type: "String",value: this.recordId},{name: "contactId",type: "String",value: sRecordIds[0]},{name: "action",type: "String",value: btnName}];
+        this.showModal = true;
+    }
+
+    handleDeleteContact(sRecords,sRecordIds,sRecordsCount,btnName){
+        this.modalTittle = 'Delete Contact';
+        this.flowApiName = 'LWC_Contact_Edit_Form';
+        this.flowProps = [{name: "accountId",type: "String",value: this.recordId},{name: "contactDeleteIds",type: "String",value: sRecordIds},{name: "action",type: "String",value: btnName}];
         this.showModal = true;
     }
 
