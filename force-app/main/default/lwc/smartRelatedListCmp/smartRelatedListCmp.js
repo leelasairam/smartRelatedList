@@ -280,6 +280,10 @@ export default class SmartRelatedListCmp extends LightningElement {
     }
 
     handleDeleteContact(sRecords,sRecordIds,sRecordsCount,btnName){
+        if(sRecordsCount==0  && sRecordsCount<1){
+            this.toast('Please select atleast one record','','error');
+            return;
+        }
         this.modalTittle = 'Delete Contact';
         this.flowApiName = 'LWC_Contact_Edit_Form';
         this.flowProps = [{name: "accountId",type: "String",value: this.recordId},{name: "contactDeleteIds",type: "String",value: sRecordIds},{name: "action",type: "String",value: btnName}];
