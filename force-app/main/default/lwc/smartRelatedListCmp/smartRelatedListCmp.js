@@ -28,7 +28,7 @@ export default class SmartRelatedListCmp extends LightningElement {
     page = 1;
     isLoading = false;
 
-    showModal = false;
+    showFlowModal = false;
     flowProps = [];
     flowApiName;
     modalTittle = '';
@@ -181,14 +181,14 @@ export default class SmartRelatedListCmp extends LightningElement {
     }
 
     closeFlow(){
-        this.showModal = false;
+        this.showFlowModal = false;
     }
 
     handleFlowStatusChange(event) {
 		console.log("flow status", event.detail.status);
 		if (event.detail.status === "FINISHED") {
 			console.log('Flow Completed');
-            this.showModal = false;
+            this.showFlowModal = false;
             this.toast('Success','Saved successfully','success');
 		}
 	}
@@ -218,7 +218,7 @@ export default class SmartRelatedListCmp extends LightningElement {
                 value: btnName,
             },
         ];
-        this.showModal = true;
+        this.showFlowModal = true;
     }
 
     handleNewCase(sRecords,sRecordIds,sRecordsCount,btnName){
@@ -241,7 +241,7 @@ export default class SmartRelatedListCmp extends LightningElement {
                 value: btnName,
             },
         ];
-        this.showModal = true;
+        this.showFlowModal = true;
     }
 
     handleNewContact(sRecords,sRecordIds,sRecordsCount,btnName){
@@ -264,7 +264,7 @@ export default class SmartRelatedListCmp extends LightningElement {
                 value: btnName,
             },
         ];
-        this.showModal = true;
+        this.showFlowModal = true;
     }
 
     handleEditContact(sRecords,sRecordIds,sRecordsCount,btnName){
@@ -276,7 +276,7 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.modalTittle = 'Edit Contact';
         this.flowApiName = 'LWC_Contact_Edit_Form';
         this.flowProps = [{name: "accountId",type: "String",value: this.recordId},{name: "contactId",type: "String",value: sRecordIds[0]},{name: "action",type: "String",value: btnName}];
-        this.showModal = true;
+        this.showFlowModal = true;
     }
 
     handleDeleteContact(sRecords,sRecordIds,sRecordsCount,btnName){
@@ -287,7 +287,7 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.modalTittle = 'Delete Contact';
         this.flowApiName = 'LWC_Contact_Edit_Form';
         this.flowProps = [{name: "accountId",type: "String",value: this.recordId},{name: "contactDeleteIds",type: "String",value: sRecordIds},{name: "action",type: "String",value: btnName}];
-        this.showModal = true;
+        this.showFlowModal = true;
     }
 
 }

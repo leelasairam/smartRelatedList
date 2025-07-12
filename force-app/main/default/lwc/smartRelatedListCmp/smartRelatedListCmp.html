@@ -43,7 +43,7 @@
             </div>
         </lightning-card>
 
-        <template if:true={showModal}>
+        <template if:true={showFlowModal}>
             <c-modal>
                 <lightning-button-icon slot="closeModal" icon-name="utility:close" onclick={closeFlow} variant="border-filled"></lightning-button-icon>
                 <div slot="header">{modalTittle}</div>
