@@ -13,6 +13,8 @@
             <property name="parentLookupField" label="Parent Lookup Field" type="String" description="Enter Lookup Field API Name."/>
             <property name="fieldsToDisplay" label="Fields to Display" type="String"  description="Use ',' to add multiple fields. Add API Names only and 'Id' field required. Avoid using unwanted spaces."/>
             <property name="filters" label="Filters" type="String" description="Write SOQL WHERE condition by excluding 'WHERE'."/>
+            <property name="orderBy" label="Order By" type="String" description="Enter field api name to order the records."/>
+            <property name="orderASCDESC" label="Order ASC or DESC?" type="String" description="Enter Order ASC or DESC"/>
             <property name="buttons" label="Buttons" type="String" description="Use ',' to add multiple buttons. Avoid using unwanted spaces."/>
             <property name="clcikableField" label="Clickable Field" type="String" description="Enter a field api name which you want to make clickable to redirect to the record."/>
             <property name="recordsPerPage" label="Records Per Page" type="Integer" />

@@ -53,4 +53,14 @@
             </c-modal>
         </template>
 
+        <template if:true={showDynamicLWcModal}>
+            <c-modal>
+                <lightning-button-icon slot="closeModal" icon-name="utility:close" onclick={closeDynamicLWC} variant="border-filled"></lightning-button-icon>
+                <div slot="header">{modalTittle}</div>
+                <div slot="body">
+                    <c-dynamic-cmp-wrapper componentname={dynamicCMPName} params={lwcParams}></c-dynamic-cmp-wrapper>
+                </div>
+            </c-modal>
+        </template>
+
 </template>

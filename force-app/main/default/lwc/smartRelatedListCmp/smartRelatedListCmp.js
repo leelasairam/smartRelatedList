@@ -14,6 +14,8 @@ export default class SmartRelatedListCmp extends LightningElement {
     @api relatedListName;
     @api clcikableField;
     @api recordsPerPage;
+    @api orderBy;
+    @api orderASCDESC;
 
     recordPageObject='';
     buttonsList;
@@ -28,10 +30,13 @@ export default class SmartRelatedListCmp extends LightningElement {
     page = 1;
     isLoading = false;
 
+    modalTittle = '';
     showFlowModal = false;
     flowProps = [];
     flowApiName;
-    modalTittle = '';
+    showDynamicLWcModal = false;
+    dynamicCMPName;//testdynamic1
+    lwcParams; //{name:'Mark', id:1}
     
 
     connectedCallback(){
@@ -40,7 +45,7 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.fieldsToDisplayList = this.fieldsToDisplay?.split(',');
         this.getFieldLabelForAPINames();
         this.getRecordPageObject();
-        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY CreatedDate DESC LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
+        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
         this.fetchData();
     }
 
@@ -132,7 +137,7 @@ export default class SmartRelatedListCmp extends LightningElement {
             this.offset -= this.recordsPerPage;
             this.page -= 1;
         }
-        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY CreatedDate DESC LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
+        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
         this.fetchData();
         const container = this.refs.dataTableDiv;
         container.querySelector("lightning-datatable").selectedRows = [];
@@ -182,6 +187,10 @@ export default class SmartRelatedListCmp extends LightningElement {
 
     closeFlow(){
         this.showFlowModal = false;
+    }
+
+    closeDynamicLWC(){
+        this.showDynamicLWcModal = false;
     }
 
     handleFlowStatusChange(event) {
