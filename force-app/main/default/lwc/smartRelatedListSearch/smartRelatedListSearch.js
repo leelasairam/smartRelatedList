@@ -1,50 +1,60 @@
-import { LightningElement,api,wire } from 'lwc';
-import smartrelatedlistchannel from '@salesforce/messageChannel/smartrelatedlistchannel__c';
-import { publish, subscribe,unsubscribe, MessageContext } from 'lightning/messageService'
+import { LightningElement,api } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import getFieldLabel from '@salesforce/apex/smartRelatedListController.getFieldLabel';
 
 export default class SmartRelatedListSearch extends LightningElement {
-    /*@api searchableFieldsList;
-
-    get fieldOptions(){
-        return this.searchableFieldsList.map(i=>({label:i,value:i}));
-    }*/
-   fieldOptions;
+   
+   @api fieldoptions;
+   @api objectname;
    isLoading = false;
-
-    @wire(MessageContext) messageContext;
-    subscription = null;
+   picklistOptions;
 
     connectedCallback(){
-        if (!this.subscription) {
-            this.subscription = subscribe(this.messageContext, smartrelatedlistchannel, (message) => {
-                console.log('smartRelatedListSearch - subscribed',message.message,message.source);
-                if(message.source=='smartRelatedListCmp' && message.message == 'send data'){
-                    this.fieldOptions = message.data.map(i=>({label:i,value:i}));
-                }
-            });
-        }
-        publish(this.messageContext, smartrelatedlistchannel, {message:'connected',source:'smartRelatedListSearch',data:'',key:'Contact'});
-        console.log('publish connected');
+        this.fetchLableNames();
     }
 
-    disconnectedCallback(){
-        this.unsubscribeEvent();
+    async fetchLableNames(){
+        this.isLoading = true
+        const options = [];
+        getFieldLabel({objectApiName:this.objectname,fieldAPINames:this.fieldoptions.split(',')})
+        .then(result=>{
+            for(let i in result){
+                options.push({label:result[i],value:i})
+            }
+            this.picklistOptions = options;
+        })
+        .catch(error=>{
+            console.log(error);
+        })
+        .finally(()=>{
+            this.isLoading = false;
+        })
     }
 
-    unsubscribeEvent(){
-        if(this.subscription){
-            unsubscribe(this.subscription);
-            this.subscription = null;
-            console.log('✅ smartRelatedListSearch - Unsubscribed from LMS');
-        }
+    toast(title,msg,varient) {
+        const event = new ShowToastEvent({
+            title: title,
+            message: msg,
+            variant: varient,
+            mode: 'dismissable'
+        });
+        this.dispatchEvent(event);
     }
 
     handleSearch(){
         const field = this.template.querySelector('.searchField').value;
         const value = this.template.querySelector('.searchValue').value;
         console.log(field,value);
-        this.unsubscribeEvent;
-        publish(this.messageContext, smartrelatedlistchannel, {message:'search data',source:'smartRelatedListSearch',data:{field:field,value:value},key:'Contact'});
+        if(!field || !value || value.length<3){
+            this.toast('Please fill all inputs','For value enter alteast 3 chars','error');
+            return;
+        }
+
+        this.dispatchEvent(new CustomEvent('searchinput', {
+            detail: {
+                message: {field:field,value:value}
+            }
+        }));
     }
     
 }

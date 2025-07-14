@@ -1,10 +1,8 @@
-import { LightningElement, api, track,wire } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import getFieldLabel from '@salesforce/apex/smartRelatedListController.getFieldLabel';
 import getData from '@salesforce/apex/smartRelatedListController.getData';
 import getObjName from '@salesforce/apex/smartRelatedListController.getObjName';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import smartrelatedlistchannel from '@salesforce/messageChannel/smartrelatedlistchannel__c';
-import { publish, subscribe, MessageContext } from 'lightning/messageService';
 
 export default class SmartRelatedListCmp extends LightningElement {
     @api recordId;
@@ -38,12 +36,12 @@ export default class SmartRelatedListCmp extends LightningElement {
     flowProps = [];
     flowApiName;
     showDynamicLWcModal = false;
-    dynamicCMPName;//testdynamic1
     lwcParams; //{name:'Mark', id:1}
 
-    subscription = null;
-    
-    @wire(MessageContext) messageContext;
+    //initialize component with default false and make true when required.
+    @track relatedCmpToggle = {
+        SmartRelatedListSearch:false,
+    };
 
     connectedCallback(){
         console.log('recordId',this.recordId);
@@ -53,25 +51,6 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.getRecordPageObject();
         this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
         this.fetchData();
-        this.intialSubscribe();
-    }
-
-    intialSubscribe(){
-        if (!this.subscription) {
-            this.subscription = subscribe(this.messageContext, smartrelatedlistchannel, (message) => {
-                console.log('smartRelatedListCmp - subscribed',message.message,message.source);
-                if(message.source=='smartRelatedListSearch' && message.message=='connected' && message.key==this.objectName){
-                    console.log('main published');
-                    //publish(this.messageContext, smartrelatedlistchannel, {message:'send data',source:'smartRelatedListCmp',data:['1','2']});
-                    setTimeout(()=>{
-                        publish(this.messageContext, smartrelatedlistchannel, {message:'send data',source:'smartRelatedListCmp',data:this.searchableFields?.split(','),key:this.objectName});
-                    },1000)
-                }
-                if(message.source=='smartRelatedListSearch' && message.message=='search data' && message.key==this.objectName){
-                    this.hanldeIncomingSearch(message.data);
-                }
-            });
-        }
     }
 
     toast(title,msg,varient) {
@@ -209,10 +188,11 @@ export default class SmartRelatedListCmp extends LightningElement {
             this.handleNewCase(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
         //Search
-        else if(btn==='Search' && this.objectName == 'Contact'){
+        else if(btn==='Search'){
             console.log('Clicked on Search');
-            this.dynamicCMPName = 'smartRelatedListSearch';//testdynamic1
+            this.modalTittle = 'Search'
             this.showDynamicLWcModal = true;
+            this.relatedCmpToggle.SmartRelatedListSearch = true;
         }
     }
 
@@ -221,7 +201,13 @@ export default class SmartRelatedListCmp extends LightningElement {
     }
 
     closeDynamicLWC(){
+        for(let i in this.relatedCmpToggle){
+            if(this.relatedCmpToggle[i]){
+                this.relatedCmpToggle[i] = false;
+            }
+        }
         this.showDynamicLWcModal = false;
+        console.log(this.relatedCmpToggle['SmartRelatedListSearch'])
     }
 
     handleFlowStatusChange(event) {
@@ -330,11 +316,12 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.showFlowModal = true;
     }
 
-    hanldeIncomingSearch(searchData){
-        this.showDynamicLWcModal = false;
+    hanldeSearch(event){
+        const searchInput = event.detail.message;
+        this.closeDynamicLWC();
         this.offset = 0;
         this.page = 1;
-        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${searchData.field} = '${searchData.value}' ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
+        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${searchInput.field} LIKE '%${searchInput.value}%' ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
         this.fetchData();
     }
 

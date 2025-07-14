@@ -58,7 +58,10 @@
                 <lightning-button-icon slot="closeModal" icon-name="utility:close" onclick={closeDynamicLWC} variant="border-filled"></lightning-button-icon>
                 <div slot="header">{modalTittle}</div>
                 <div slot="body">
-                    <c-dynamic-cmp-wrapper componentname={dynamicCMPName}></c-dynamic-cmp-wrapper>
+                    <!--SmartRelatedListSearch : Used to search the records from related list-->
+                    <template if:true={relatedCmpToggle.SmartRelatedListSearch}>
+                        <c-smart-related-list-search onsearchinput={hanldeSearch} fieldoptions={searchableFields} objectname={objectName}></c-smart-related-list-search>
+                    </template>
                 </div>
             </c-modal>
         </template>
