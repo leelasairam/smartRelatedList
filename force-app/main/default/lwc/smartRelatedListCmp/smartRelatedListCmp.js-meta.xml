@@ -18,6 +18,7 @@
             <property name="buttons" label="Buttons" type="String" description="Use ',' to add multiple buttons. Avoid using unwanted spaces."/>
             <property name="clcikableField" label="Clickable Field" type="String" description="Enter a field api name which you want to make clickable to redirect to the record."/>
             <property name="recordsPerPage" label="Records Per Page" type="Integer" />
+            <property name="searchableFields" label="Searchable Fields" type="String" description="Enter field api names which you to bsearchable. Enter maxmium 3 fields."  />
         </targetConfig>
     </targetConfigs>
 

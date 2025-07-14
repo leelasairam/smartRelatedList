@@ -1,8 +1,10 @@
-import { LightningElement, api, track } from 'lwc';
+import { LightningElement, api, track,wire } from 'lwc';
 import getFieldLabel from '@salesforce/apex/smartRelatedListController.getFieldLabel';
 import getData from '@salesforce/apex/smartRelatedListController.getData';
 import getObjName from '@salesforce/apex/smartRelatedListController.getObjName';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import smartrelatedlistchannel from '@salesforce/messageChannel/smartrelatedlistchannel__c';
+import { publish, subscribe, MessageContext } from 'lightning/messageService';
 
 export default class SmartRelatedListCmp extends LightningElement {
     @api recordId;
@@ -16,6 +18,7 @@ export default class SmartRelatedListCmp extends LightningElement {
     @api recordsPerPage;
     @api orderBy;
     @api orderASCDESC;
+    @api searchableFields;
 
     recordPageObject='';
     buttonsList;
@@ -37,7 +40,10 @@ export default class SmartRelatedListCmp extends LightningElement {
     showDynamicLWcModal = false;
     dynamicCMPName;//testdynamic1
     lwcParams; //{name:'Mark', id:1}
+
+    subscription = null;
     
+    @wire(MessageContext) messageContext;
 
     connectedCallback(){
         console.log('recordId',this.recordId);
@@ -47,6 +53,25 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.getRecordPageObject();
         this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
         this.fetchData();
+        this.intialSubscribe();
+    }
+
+    intialSubscribe(){
+        if (!this.subscription) {
+            this.subscription = subscribe(this.messageContext, smartrelatedlistchannel, (message) => {
+                console.log('smartRelatedListCmp - subscribed',message.message,message.source);
+                if(message.source=='smartRelatedListSearch' && message.message=='connected' && message.key==this.objectName){
+                    console.log('main published');
+                    //publish(this.messageContext, smartrelatedlistchannel, {message:'send data',source:'smartRelatedListCmp',data:['1','2']});
+                    setTimeout(()=>{
+                        publish(this.messageContext, smartrelatedlistchannel, {message:'send data',source:'smartRelatedListCmp',data:this.searchableFields?.split(','),key:this.objectName});
+                    },1000)
+                }
+                if(message.source=='smartRelatedListSearch' && message.message=='search data' && message.key==this.objectName){
+                    this.hanldeIncomingSearch(message.data);
+                }
+            });
+        }
     }
 
     toast(title,msg,varient) {
@@ -183,6 +208,12 @@ export default class SmartRelatedListCmp extends LightningElement {
             console.log('Clicked on Case New');
             this.handleNewCase(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
+        //Search
+        else if(btn==='Search' && this.objectName == 'Contact'){
+            console.log('Clicked on Search');
+            this.dynamicCMPName = 'smartRelatedListSearch';//testdynamic1
+            this.showDynamicLWcModal = true;
+        }
     }
 
     closeFlow(){
@@ -297,6 +328,14 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.flowApiName = 'LWC_Contact_Edit_Form';
         this.flowProps = [{name: "accountId",type: "String",value: this.recordId},{name: "contactDeleteIds",type: "String",value: sRecordIds},{name: "action",type: "String",value: btnName}];
         this.showFlowModal = true;
+    }
+
+    hanldeIncomingSearch(searchData){
+        this.showDynamicLWcModal = false;
+        this.offset = 0;
+        this.page = 1;
+        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${searchData.field} = '${searchData.value}' ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
+        this.fetchData();
     }
 
 }

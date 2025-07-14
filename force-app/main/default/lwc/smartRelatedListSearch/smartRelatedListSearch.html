@@ -1,0 +1,24 @@
+<template>
+    <!--Loading-->
+    <template if:true={isLoading}>
+        <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+    </template>
+    <!--layout-->
+    <lightning-layout>
+        <lightning-layout-item padding="around-small" size="5">
+            <div class="custom-box slds-box slds-p-around_medium slds-text-align_center">
+                <lightning-combobox label="Field" options={fieldOptions} class="searchField"></lightning-combobox>
+            </div>
+        </lightning-layout-item>
+        <lightning-layout-item padding="around-small" size="5">
+            <div class="custom-box slds-box slds-p-around_medium slds-text-align_center">
+                <lightning-input class="searchValue"></lightning-input>
+            </div>
+        </lightning-layout-item>
+        <lightning-layout-item padding="around-small" size="2">
+            <div class="custom-box slds-box slds-p-around_medium slds-text-align_center">
+                <lightning-button-icon icon-name="utility:search" onclick={handleSearch} variant="brand"></lightning-button-icon>
+            </div>
+        </lightning-layout-item>
+    </lightning-layout>
+</template>
