@@ -10,7 +10,7 @@
                         </template>
                     </template>
                     <!--Menu Items-->
-                    <lightning-button-menu alternative-text="Show menu" variant="border-filled">
+                    <lightning-button-menu alternative-text="Show menu" variant="border-filled" menu-alignment="auto">
                         <template for:each={buttonsList} for:item="j">
                             <template if:true={j.isMenuItem}>
                                 <lightning-menu-item label={j.name} data-btn={j.name} key={j.name} onclick={handleButtonActions}></lightning-menu-item>
@@ -25,7 +25,7 @@
                 <lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
             </template>
             <!--data table-->
-            <div class="slds-p-horizontal_small" lwc:ref="dataTableDiv">
+            <div class="slds-p-horizontal_small slds-scrollable_x" lwc:ref="dataTableDiv">
                 <lightning-datatable key-field="id" data={sObjectData} columns={cols}></lightning-datatable>
                 <template if:true={disableNextButton}>
                     <div class="no-data">

@@ -30,6 +30,9 @@ export default class SmartRelatedListCmp extends LightningElement {
     disablePrevButton = false;
     page = 1;
     isLoading = false;
+    refreshHits = 0;
+    @track altFields = [];
+    //excludeFields = ['Id','OwnerId','CreatedById','LastModifiedById','AccountId'];
 
     modalTittle = '';
     showFlowModal = false;
@@ -45,8 +48,16 @@ export default class SmartRelatedListCmp extends LightningElement {
 
     connectedCallback(){
         console.log('recordId',this.recordId);
-        this.buttonsList = this.buttons?.split(',').map((btn,index)=>({name:btn,isMenuItem:index<=1 ? false : true}));
-        this.fieldsToDisplayList = this.fieldsToDisplay?.split(',');
+        this.buttonsList = this.buttons?.split(',').map((btn,index)=>({name:btn,isMenuItem:index<=2 ? false : true}));
+        this.fieldsToDisplayList = this.fieldsToDisplay?.split(',').map(i=>{
+            if(!i.includes('.')){
+                return i;
+            }
+            else{
+                this.altFields.push(i);
+                return null;
+            }
+        }).filter(Boolean);
         this.getFieldLabelForAPINames();
         this.getRecordPageObject();
         this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
@@ -86,18 +97,28 @@ export default class SmartRelatedListCmp extends LightningElement {
             for(let i in result){
                 if(i!='Id' && i!='id'){
                     if(i!=this.clcikableField){
-                        columns.push({label:result[i],fieldName:i});
+                        columns.push({label:result[i],fieldName:i,initialWidth: 180});
                     }
                     else if(i==this.clcikableField){
                         columns.push({
-                            label: i,
+                            label: result[i],
                             fieldName: 'recordLink',
                             type: 'url',
+                            initialWidth: 180,
                             typeAttributes: { label: { fieldName: i }, target: '_blank' }
                         })
                     }
                 }
             }
+            if(this.altFields){
+                this.altFields.forEach(i=>{
+                    const objName = i.split('.')[0];
+                    if(i.split('.')[1]!='Id'){
+                        columns.push({label:i.replace(/\./g, ' '),fieldName:`${objName}Id`,initialWidth: 180,type: 'url',typeAttributes: { label: { fieldName: i.replace(/\./g, '') }, target: '_blank' }});
+                    }
+                })
+            }
+            
             this.cols  = columns;
         })
         .catch(error=>{
@@ -110,12 +131,39 @@ export default class SmartRelatedListCmp extends LightningElement {
     }
 
     async fetchData(){
-        console.log('query',this.query,this.cols);
+        console.log('query',this.query,this.cols,'Refresh Hits'+this.refreshHits);
         this.isLoading = true;
-        await getData({q:this.query})
+        await getData({q:this.query,refreshHits:this.refreshHits})
         .then(result=>{
             console.log('data',result);
-            this.sObjectData = result.map(res=>({...res,recordLink:'/'+res.Id}));
+            //this.sObjectData = result.map(res=>({...res,recordLink:'/'+res.Id}));
+
+            this.sObjectData = result.map(res => {
+            const flat = {
+                recordLink: '/' + res.Id // Add record link
+            };
+
+            for (let key in res) {
+                const value = res[key];
+
+                if (typeof value === 'object' && value !== null) {
+                    // Flatten 1-level nested objects like Owner.Name
+                    for (let nestedKey in value) {
+                        if(nestedKey == 'Id'){
+                            flat[`${key}${nestedKey}`] = `/${value[nestedKey]}`
+                        }
+                        else{
+                            flat[`${key}${nestedKey}`] = value[nestedKey]; // e.g., OwnerName
+                        }
+                    }
+                } else {
+                    flat[key] = value;
+                }
+            }
+
+                return flat;
+            });
+            console.log('Print',this.sObjectData[0].OwnerName);
             const recSize = result.length;
             if(this.page==1){
                 this.totalRecordsCount = recSize >= this.recordsPerPage ? `${this.recordsPerPage}+` : `${recSize}`;
@@ -165,15 +213,15 @@ export default class SmartRelatedListCmp extends LightningElement {
             this.handleEditContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
         //Contact New
-        if(btn==='New' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
+        else if(btn==='New' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
             console.log('Contact New');
             this.handleNewContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
-        if(btn==='New' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
+        else if(btn==='New' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
             console.log('Contact New');
             this.handleNewContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
-        if(btn==='Delete' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
+        else if(btn==='Delete' && this.objectName === 'Contact' && this.recordPageObject === 'Account'){
             console.log('Contact Delete');
             this.handleDeleteContact(selectedRecords,selectedRecordIds,selectedRecordSize,btn);
         }
@@ -193,6 +241,9 @@ export default class SmartRelatedListCmp extends LightningElement {
             this.modalTittle = 'Search'
             this.showDynamicLWcModal = true;
             this.relatedCmpToggle.SmartRelatedListSearch = true;
+        }
+        else if(btn==='Refresh'){
+            this.refresh();
         }
     }
 
@@ -322,6 +373,15 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.offset = 0;
         this.page = 1;
         this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${searchInput.field} LIKE '%${searchInput.value}%' ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
+        this.fetchData();
+    }
+
+    refresh(){
+        this.refreshHits+=1;
+        console.log('refreshHits',this.refreshHits);
+        this.offset = 0;
+        this.page = 1;
+        this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
         this.fetchData();
     }
 
