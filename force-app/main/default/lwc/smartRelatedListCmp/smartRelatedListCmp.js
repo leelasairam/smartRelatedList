@@ -140,14 +140,14 @@ export default class SmartRelatedListCmp extends LightningElement {
 
             this.sObjectData = result.map(res => {
             const flat = {
-                recordLink: '/' + res.Id // Add record link
+                recordLink: '/' + res.Id
             };
 
             for (let key in res) {
                 const value = res[key];
 
                 if (typeof value === 'object' && value !== null) {
-                    // Flatten 1-level nested objects like Owner.Name
+                    
                     for (let nestedKey in value) {
                         if(nestedKey == 'Id'){
                             flat[`${key}${nestedKey}`] = `/${value[nestedKey]}`
@@ -266,7 +266,7 @@ export default class SmartRelatedListCmp extends LightningElement {
 		if (event.detail.status === "FINISHED") {
 			console.log('Flow Completed');
             this.showFlowModal = false;
-            this.toast('Success','Saved successfully','success');
+            this.toast('Success','Changes saved successfully','success');
 		}
 	}
 
