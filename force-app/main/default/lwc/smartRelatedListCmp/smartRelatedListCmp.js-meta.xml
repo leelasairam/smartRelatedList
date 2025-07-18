@@ -11,7 +11,7 @@
             <property name="relatedListName" label="Related List Name" type="String" description="Enter Name of the Related list to display in card title."/>
             <property name="objectName" label="Object Name" type="String" description="Enter Object API Name."/>
             <property name="parentLookupField" label="Parent Lookup Field" type="String" description="Enter Lookup Field API Name."/>
-            <property name="fieldsToDisplay" label="Fields to Display" type="String"  description="Use commas to separate multiple fields. Include only API Names, and make sure to add the 'Id' field. To reference parent fields, use dot notation. For example, to include Account.Name, specify both Account.Id and Account.Name. Avoid using unnecessary spaces."/>
+            <property name="fieldsToDisplay" label="Fields to Display" type="String"  description="Separate multiple fields using commas. Include only API names, and always add the 'Id' field. Use dot notation to reference parent fields. For example, to include Account.Name, specify both Account.Id and Account.Name. Only one level of hierarchy is supported to display parent fields. Field names are case sensitive — use 'Id', not 'id'.  Avoid unnecessary spaces."/>
             <property name="filters" label="Filters" type="String" description="Write SOQL 'WHERE' condition by excluding 'WHERE'."/>
             <property name="orderBy" label="Order By" type="String" description="Enter field api name to order the records."/>
             <property name="orderASCDESC" label="Order ASC or DESC?" type="String" description="Enter order of sorting (ASC or DESC)."/>

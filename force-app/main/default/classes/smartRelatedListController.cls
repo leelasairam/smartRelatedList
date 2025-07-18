@@ -20,9 +20,16 @@ public class smartRelatedListController {
     }
     
     @AuraEnabled(cacheable=true)
-    public static list<sObject> getData(String q){
+    public static list<sObject> getData(String q,Integer refreshHits){
         list<sobject>data = database.query(q);
         return data;
+    }
+    
+    @AuraEnabled(cacheable=true)
+    public static String getObjName(String recordId){
+        Schema.SObjectType objType = Id.valueOf(recordId).getSObjectType();
+        Schema.DescribeSObjectResult describeResult = objType.getDescribe();
+        return describeResult.getLabel();//returns object name
     }
     
     

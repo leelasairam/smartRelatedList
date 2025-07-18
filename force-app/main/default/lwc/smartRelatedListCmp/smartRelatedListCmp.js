@@ -31,7 +31,7 @@ export default class SmartRelatedListCmp extends LightningElement {
     page = 1;
     isLoading = false;
     refreshHits = 0;
-    @track altFields = [];
+    @track pFields = [];
     //excludeFields = ['Id','OwnerId','CreatedById','LastModifiedById','AccountId'];
 
     modalTittle = '';
@@ -54,7 +54,7 @@ export default class SmartRelatedListCmp extends LightningElement {
                 return i;
             }
             else{
-                this.altFields.push(i);
+                this.pFields.push(i);
                 return null;
             }
         }).filter(Boolean);
@@ -110,16 +110,43 @@ export default class SmartRelatedListCmp extends LightningElement {
                     }
                 }
             }
-            if(this.altFields){
-                this.altFields.forEach(i=>{
+            if(this.pFields){
+                this.pFields.forEach(i=>{
                     const objName = i.split('.')[0];
                     if(i.split('.')[1]!='Id'){
-                        columns.push({label:i.replace(/\./g, ' '),fieldName:`${objName}Id`,initialWidth: 180,type: 'url',typeAttributes: { label: { fieldName: i.replace(/\./g, '') }, target: '_blank' }});
+                        columns.push({label:i.replace(/\./, ' ⤷ ').replace(/_/g, ' ').replace(/__c$/, ''),fieldName:`${objName}Id`,initialWidth: 180,type: 'url',typeAttributes: { label: { fieldName: i.replace(/\./g, '') }, target: '_blank' }});
                     }
                 })
             }
+
+            const sequenceCols = [];
+            const flexiFields = this.fieldsToDisplay.split(',').map(i=>{
+                if(i.includes('.')){
+                    return i.split('.')[1]!= 'Id' ? i.replace(/\./g, '') : null;
+                }
+                else{
+                    return i != 'Id' ? i : null;
+                }
+            }).filter(Boolean);
             
-            this.cols  = columns;
+            /*flexiFields.forEach(i=>{
+                console.log('flexiField',i);
+            })
+
+            columns.forEach(i=>{
+                console.log('label',i.label);
+            })*/
+
+            flexiFields.forEach(i => {
+                const index = columns.findIndex(l =>
+                    !l.typeAttributes
+                        ? l.fieldName === i
+                        : l.typeAttributes.label.fieldName === i
+                );
+                sequenceCols.push(columns[index]);
+            });
+            //console.log('sequenceCols',sequenceCols[0]);
+            this.cols  = sequenceCols;
         })
         .catch(error=>{
             console.log(error);
