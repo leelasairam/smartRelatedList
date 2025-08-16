@@ -190,8 +190,9 @@ export default class SmartRelatedListCmp extends LightningElement {
 
                 return flat;
             });
-            console.log('Print',this.sObjectData[0].OwnerName);
+            //console.log('Print',this.sObjectData[0].OwnerName);
             const recSize = result.length;
+            console.log('Records return',recSize,this.recordsPerPage);
             if(this.page==1){
                 this.totalRecordsCount = recSize >= this.recordsPerPage ? `${this.recordsPerPage}+` : `${recSize}`;
             }
@@ -410,6 +411,8 @@ export default class SmartRelatedListCmp extends LightningElement {
         this.page = 1;
         this.query = `SELECT ${this.fieldsToDisplay} FROM ${this.objectName} WHERE ${this.parentLookupField} = '${this.recordId}' AND ${this.filters} ORDER BY ${this.orderBy} ${this.orderASCDESC} LIMIT ${this.recordsPerPage} OFFSET ${this.offset}`;
         this.fetchData();
+        const container = this.refs.dataTableDiv;
+        container.querySelector("lightning-datatable").selectedRows = [];
     }
 
 }
